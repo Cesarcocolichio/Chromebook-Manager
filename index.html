@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chromebook Manager - Design Final</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <style>
+        :root {
+            --blue-dark: #0f2a6b; /* Usado no topo, texto e agora no HOVER */
+            --orange: #d97706; /* Cor padrão do botão */
+            --orange-hover: #b45309; /* Cor antiga do hover (não usada mais) */
+            --gray-200: #e5e7eb;
+            --gray-500: #6b7280;
+            --text-main: #111827;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background: #f9fafb;
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .topbar {
+            background: var(--blue-dark);
+            padding: 30px 20px;
+            text-align: center;
+            border-bottom: 4px solid var(--orange);
+        }
+
+        .topbar h1 {
+            margin: 0;
+            font-size: 24px;
+            color: white;
+            font-weight: 700;
+        }
+
+        .topbar h1 span { color: var(--orange); }
+
+        .topbar p {
+            margin: 8px 0 0;
+            font-size: 13px;
+            color: #a5b4fc;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+
+        .container {
+            padding: 24px 20px;
+            max-width: 450px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .actions {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin-bottom: 32px;
+        }
+
+        .btn {
+            background: var(--orange);
+            color: white;
+            padding: 14px 18px;
+            border-radius: 12px;
+            font-size: 15px;
+            text-decoration: none;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease; /* Transição suave para a nova cor */
+        }
+
+        /* MODIFICAÇÃO: Botões ficam AZUIS ao hover */
+        .btn:hover {
+            background: var(--blue-dark); /* Mudado de orange-hover para blue-dark */
+            transform: translateY(-1px);
+        }
+
+        /* MODIFICAÇÃO: Botões ficam AZUIS ao clicar (active) */
+        .btn:active {
+            background: var(--blue-dark); /* Mantém azul ao clicar */
+            transform: translateY(1px); /* Efeito de "apertar" */
+            transition: transform 0.05s ease; /* Resposta imediata ao clique */
+        }
+
+        .icon-wrapper {
+            background: white;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            margin-right: 14px;
+            flex-shrink: 0;
+        }
+
+        .icon-wrapper i {
+            color: var(--orange);
+            font-size: 18px;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .card {
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: 16px;
+            padding: 18px;
+            text-align: center;
+        }
+
+        .card h4 {
+            margin: 0;
+            font-size: 11px;
+            color: var(--gray-500);
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .value {
+            margin-top: 8px;
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--blue-dark);
+        }
+
+        .footer-info {
+            text-align: center;
+            margin-top: auto;
+            padding: 20px;
+            font-size: 12px;
+            color: var(--gray-500);
+        }
+    </style>
+</head>
+<body>
+
+    <header class="topbar">
+        <h1>Chromebook<span>Manager</span></h1>
+        <p>Gestão de Inventário</p>
+    </header>
+
+    <main class="container">
+        <nav class="actions">
+            <a href="retirar.html" class="btn">
+                <span class="icon-wrapper"><i class="ph ph-package"></i></span>
+                <span>Separar Pedidos</span>
+            </a>
+            <a href="liberar.html" class="btn">
+                <span class="icon-wrapper"><i class="ph ph-truck"></i></span>
+                <span>Liberar Pedidos</span>
+            </a>
+            <a href="devolver.html" class="btn">
+                <span class="icon-wrapper"><i class="ph ph-arrow-u-up-left"></i></span>
+                <span>Devolver Chromebook</span>
+            </a>
+        </nav>
+
+        <section class="status-grid">
+            <div class="card">
+                <h4>Disponíveis</h4>
+                <div id="count-disponiveis" class="value">0</div>
+            </div>
+
+            <div class="card">
+                <h4>Em uso</h4>
+                <div id="count-em-uso" class="value">0</div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer-info">
+        v1.1.0 • Sistema em Tempo Real
+    </footer>
+
+    <script>
+        // Restaurei a sua função original caso você precise usá-la em algum outro botão futuramente.
+        function ir(pagina) {
+            window.location.href = pagina;
+        }
+    </script>
+
+</body>
+</html>

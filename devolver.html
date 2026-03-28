@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Devolver Chromebook - Chromebook Manager</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <style>
+        :root {
+            --blue-dark: #0f2a6b;
+            --orange: #d97706;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-500: #6b7280;
+            --text-main: #111827;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --success: #059669;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background: #f9fafb;
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* BARRA SUPERIOR */
+        .topbar {
+            background: var(--blue-dark);
+            padding: 20px;
+            text-align: center;
+            border-bottom: 4px solid var(--orange);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .topbar h1 {
+            margin: 0;
+            font-size: 20px;
+            color: white;
+            font-weight: 700;
+        }
+
+        .btn-voltar-top {
+            position: absolute;
+            left: 20px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+
+        .btn-voltar-top:hover { background: rgba(255,255,255,0.2); }
+
+        .container {
+            padding: 24px 20px;
+            max-width: 500px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* CARD DO SCANNER */
+        .status-box {
+            background: white;
+            padding: 24px;
+            border-radius: 20px;
+            border: 1px solid var(--gray-200);
+            text-align: center;
+            box-shadow: var(--shadow);
+        }
+
+        .status-box h2 { 
+            margin: 0; 
+            font-size: 18px; 
+            color: var(--blue-dark); 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .status-box p { color: var(--gray-500); font-size: 14px; margin: 8px 0 20px; }
+
+        #reader { 
+            width: 100%; 
+            border-radius: 16px; 
+            overflow: hidden; 
+            margin-bottom: 20px;
+            border: 2px solid var(--gray-200);
+            background: #000;
+        }
+
+        /* FEEDBACK DE STATUS */
+        #feedback { 
+            margin-top: 15px; 
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 14px; 
+            font-weight: 600; 
+            display: none;
+        }
+
+        .status-loading { background: var(--gray-100); color: var(--gray-500); }
+        .status-success { background: #ecfdf5; color: var(--success); }
+        .status-error { background: #fef2f2; color: #dc2626; }
+
+        /* ANIMAÇÃO DE GIRO */
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .ph-spin {
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+
+        .btn-action {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            border: 1px solid var(--gray-200);
+            background: white;
+            color: var(--gray-500);
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 10px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn-action:hover { background: var(--gray-100); }
+
+    </style>
+</head>
+
+<body>
+
+    <header class="topbar">
+        <button class="btn-voltar-top" onclick="window.location.href='index.html'">
+            <i class="ph ph-caret-left"></i> Voltar
+        </button>
+        <h1>Devolver <span>Chromebook</span></h1>
+    </header>
+
+    <main class="container">
+        
+        <div class="status-box">
+            <h2><i class="ph ph-arrow-u-up-left"></i> Registrar Devolução</h2>
+            <p>Aponte a câmera para o QR Code do equipamento para liberar o status.</p>
+            
+            <div id="reader"></div>
+
+            <div id="feedback"></div>
+            
+            <button class="btn-action" onclick="window.location.href='index.html'">
+                Cancelar e Sair
+            </button>
+        </div>
+
+    </main>
+
+    <script src="https://unpkg.com/html5-qrcode"></script>
+
+    <script>
+        const BASE_URL = "https://script.google.com/macros/s/AKfycbwy2JvVfE1vZ_Tp2LAEfsSoOlgzgCCCKotsVTUOWY6CFPloFrgvt_mpQ8VVQoeqN0QF/exec"; 
+
+        const scanner = new Html5Qrcode("reader");
+        const feedbackEl = document.getElementById("feedback");
+
+        function showFeedback(text, type) {
+            feedbackEl.style.display = "block";
+            feedbackEl.className = ""; // limpa classes
+            
+            if (type === 'loading') {
+                feedbackEl.classList.add('status-loading');
+                feedbackEl.innerHTML = `<i class="ph ph-circle-notch ph-spin"></i> ${text}`;
+            } else if (type === 'success') {
+                feedbackEl.classList.add('status-success');
+                feedbackEl.innerHTML = `<i class="ph ph-check-circle"></i> ${text}`;
+            } else {
+                feedbackEl.classList.add('status-error');
+                feedbackEl.innerHTML = `<i class="ph ph-warning-circle"></i> ${text}`;
+            }
+        }
+
+        const qrboxSize = Math.min(window.innerWidth * 0.7, 250);
+
+        const config = { 
+            fps: 10, 
+            qrbox: { width: qrboxSize, height: qrboxSize },
+            aspectRatio: 1.0
+        };
+
+        scanner.start(
+            { facingMode: "environment" }, 
+            config,
+            qrCodeMessage => {
+                const idLido = qrCodeMessage.trim();
+                
+                // Pausa o scanner para processar
+                scanner.pause();
+                showFeedback("Processando devolução...", "loading");
+
+                const url = `${BASE_URL}?id=${idLido}&acao=devolver`;
+                
+                fetch(url)
+                .then(res => res.text())
+                .then(msg => {
+                    if (msg.includes("sucesso") || msg.includes("OK")) {
+                        showFeedback(msg, "success");
+                    } else {
+                        showFeedback(msg, "error");
+                    }
+                    
+                    // Aguarda 2 segundos para o usuário ler o feedback e volta a escanear
+                    setTimeout(() => {
+                        feedbackEl.style.display = "none";
+                        scanner.resume();
+                    }, 2500);
+                })
+                .catch(err => {
+                    showFeedback("Erro na conexão.", "error");
+                    setTimeout(() => scanner.resume(), 2500);
+                });
+            }
+        ).catch(err => {
+            console.error("Erro ao iniciar câmera:", err);
+            showFeedback("Erro ao acessar câmera.", "error");
+        });
+    </script>
+</body>
+</html>

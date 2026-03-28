@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liberar Pedidos - Chromebook Manager</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <style>
+        :root {
+            --blue-dark: #0f2a6b;
+            --orange: #d97706;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-500: #6b7280;
+            --text-main: #111827;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background: #f9fafb;
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* BARRA SUPERIOR */
+        .topbar {
+            background: var(--blue-dark);
+            padding: 20px;
+            text-align: center;
+            border-bottom: 4px solid var(--orange);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .topbar h1 {
+            margin: 0;
+            font-size: 20px;
+            color: white;
+            font-weight: 700;
+        }
+
+        .btn-voltar-top {
+            position: absolute;
+            left: 20px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+
+        .btn-voltar-top:hover { background: rgba(255,255,255,0.2); }
+
+        .container {
+            padding: 24px 20px;
+            max-width: 500px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* Título da seção (Começa escondido) */
+        .section-title {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--gray-500);
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: none;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* CARDS DE LIBERAÇÃO */
+        .container-cards { display: flex; flex-direction: column; gap: 16px; }
+
+        .card {
+            background: white;
+            border: 1px solid var(--gray-200);
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            transition: 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .info-prof h3 { margin: 0; font-size: 18px; color: var(--blue-dark); }
+        .info-prof p { margin: 4px 0 0; font-size: 13px; color: var(--gray-500); }
+
+        .badge-id {
+            background: var(--gray-100);
+            color: var(--gray-500);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        /* BOTÃO DE ENTREGAR */
+        .btn-liberar {
+            background: var(--orange);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 12px;
+            width: 100%;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn-liberar:hover {
+            background: var(--blue-dark);
+        }
+
+        .btn-liberar:active {
+            transform: scale(0.98);
+        }
+
+        /* LOADING E ANIMAÇÃO */
+        #loading { 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--gray-500); 
+            padding: 60px 20px;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .ph-spin {
+            animation: spin 1s linear infinite;
+            font-size: 32px; 
+            margin-bottom: 10px; 
+            color: var(--orange);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: var(--gray-500);
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            opacity: 0.3;
+            margin-bottom: 10px;
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="topbar">
+        <button class="btn-voltar-top" onclick="window.location.href='index.html'">
+            <i class="ph ph-caret-left"></i> Voltar
+        </button>
+        <h1>Liberar <span>Pedidos</span></h1>
+    </header>
+
+    <main class="container">
+        
+        <div id="titulo-secao" class="section-title">
+            <i class="ph ph-truck"></i> Prontos para Entrega
+        </div>
+
+        <div id="loading">
+            <i class="ph ph-circle-notch ph-spin"></i>
+            <span>Buscando carrinhos prontos...</span>
+        </div>
+
+        <div id="container-pedidos" class="container-cards"></div>
+
+    </main>
+
+    <script>
+        const BASE_URL = "https://script.google.com/macros/s/AKfycbwy2JvVfE1vZ_Tp2LAEfsSoOlgzgCCCKotsVTUOWY6CFPloFrgvt_mpQ8VVQoeqN0QF/exec"; 
+
+        window.onload = function() {
+            carregarPedidosLiberacao();
+        };
+
+        function carregarPedidosLiberacao() {
+            document.getElementById("titulo-secao").style.display = "none";
+            document.getElementById("loading").style.display = "flex";
+
+            fetch(`${BASE_URL}?acao=listar_pedidos`)
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById("loading").style.display = "none";
+                const container = document.getElementById("container-pedidos");
+                const titulo = document.getElementById("titulo-secao");
+                container.innerHTML = "";
+                
+                // Filtra apenas os pedidos que já foram separados
+                const separados = data.filter(p => p.status === "Separado");
+
+                if(separados.length === 0) {
+                    titulo.style.display = "none";
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="ph ph-package"></i>
+                            <p>Nenhum carrinho aguardando<br>retirada no momento.</p>
+                        </div>`;
+                    return;
+                }
+
+                titulo.style.display = "flex";
+
+                separados.forEach(p => {
+                    const card = document.createElement("div");
+                    card.className = "card";
+                    card.innerHTML = `
+                        <div class="card-header">
+                            <div class="info-prof">
+                                <h3>${p.professor}</h3>
+                                <p><i class="ph ph-hash"></i> Pedido: <strong>${p.id}</strong></p>
+                            </div>
+                            <span class="badge-id">SEPARADO</span>
+                        </div>
+                        <p style="font-size: 14px; color: var(--gray-500); margin: 0 0 15px 0;">
+                            <i class="ph ph-devices"></i> Itens no carrinho: <strong>${p.quantidade}</strong>
+                        </p>
+                        <button class="btn-liberar" onclick="confirmarEntrega('${p.id}')">
+                            <i class="ph ph-check-circle"></i> ENTREGAR AGORA
+                        </button>
+                    `;
+                    container.appendChild(card);
+                });
+            })
+            .catch(err => {
+                document.getElementById("loading").innerHTML = "Erro ao conectar com o servidor.";
+            });
+        }
+
+        function confirmarEntrega(idPedido) {
+            if(!confirm("Confirmar que o professor está levando o carrinho?")) return;
+
+            // Feedback visual no botão durante o clique
+            const btn = event.currentTarget;
+            btn.innerHTML = '<i class="ph ph-circle-notch ph-spin"></i> Processando...';
+            btn.style.opacity = "0.7";
+            btn.style.pointerEvents = "none";
+
+            fetch(`${BASE_URL}?idPedido=${idPedido}&acao=liberar_pedido`)
+            .then(res => res.text())
+            .then(msg => {
+                alert(msg);
+                location.reload();
+            })
+            .catch(err => {
+                alert("Erro ao finalizar entrega.");
+                location.reload();
+            });
+        }
+    </script>
+</body>
+</html>
