@@ -5,14 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Separar Pedidos - Chromebook Manager</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
     <style>
         :root {
             --blue-dark: #0f2a6b;
             --orange: #d97706;
-            --red-alert: #dc2626; /* Cor para erro crítico */
+            --red-alert: #dc2626;
             --blue-hover: #1e3a8a;
             --gray-100: #f3f4f6;
             --gray-200: #e5e7eb;
@@ -21,212 +20,40 @@
             --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
 
-        body {
-            margin: 0;
-            font-family: 'Inter', sans-serif;
-            background: #f9fafb;
-            color: var(--text-main);
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-
-        /* BARRA SUPERIOR */
-        .topbar {
-            background: var(--blue-dark);
-            padding: 20px;
-            text-align: center;
-            border-bottom: 4px solid var(--orange);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
-
-        .topbar h1 {
-            margin: 0;
-            font-size: 20px;
-            color: white;
-            font-weight: 700;
-        }
-
-        .btn-voltar-top {
-            position: absolute;
-            left: 20px;
-            background: rgba(255,255,255,0.1);
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 8px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 14px;
-            transition: 0.2s;
-        }
-
-        .btn-voltar-top:hover { background: rgba(255,255,255,0.2); }
-
-        .container {
-            padding: 24px 20px;
-            max-width: 500px;
-            margin: 0 auto;
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        .section-title {
-            font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--gray-500);
-            font-weight: 600;
-            margin-bottom: 16px;
-            display: none; 
-            align-items: center;
-            gap: 8px;
-        }
-
+        body { margin: 0; font-family: 'Inter', sans-serif; background: #f9fafb; color: var(--text-main); display: flex; flex-direction: column; min-height: 100vh; }
+        .topbar { background: var(--blue-dark); padding: 20px; text-align: center; border-bottom: 4px solid var(--orange); display: flex; align-items: center; justify-content: center; position: relative; }
+        .topbar h1 { margin: 0; font-size: 20px; color: white; font-weight: 700; }
+        .btn-voltar-top { position: absolute; left: 20px; background: rgba(255,255,255,0.1); color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 5px; font-size: 14px; }
+        .container { padding: 24px 20px; max-width: 500px; margin: 0 auto; width: 100%; box-sizing: border-box; }
+        .section-title { font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: var(--gray-500); font-weight: 600; margin-bottom: 16px; display: none; align-items: center; gap: 8px; }
         .container-cards { display: flex; flex-direction: column; gap: 12px; }
-
-        .card-pedido {
-            background: white;
-            border: 1px solid var(--gray-200);
-            padding: 18px;
-            border-radius: 16px;
-            cursor: pointer;
-            transition: 0.2s;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .card-pedido:hover {
-            border-color: var(--orange);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow);
-        }
-
+        .card-pedido { background: white; border: 1px solid var(--gray-200); padding: 18px; border-radius: 16px; cursor: pointer; transition: 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; }
+        .card-pedido:hover { border-color: var(--orange); transform: translateY(-2px); }
         .info-prof h3 { margin: 0; font-size: 16px; color: var(--blue-dark); }
         .info-prof p { margin: 4px 0 0; font-size: 13px; color: var(--gray-500); }
-
-        .badge-id {
-            background: var(--gray-100);
-            color: var(--gray-500);
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 700;
-        }
-
-        .status-box {
-            background: white;
-            padding: 24px;
-            border-radius: 20px;
-            border: 1px solid var(--gray-200);
-            text-align: center;
-            box-shadow: var(--shadow);
-        }
-
-        .status-box h2 { margin: 0; font-size: 18px; color: var(--blue-dark); }
-        .status-box p { color: var(--gray-500); font-size: 14px; margin: 5px 0 15px; }
-
-        #contagem {
-            display: inline-block;
-            background: var(--gray-100);
-            color: var(--blue-dark);
-            padding: 10px 20px;
-            border-radius: 12px;
-            font-weight: 800;
-            font-size: 22px;
-            margin: 10px 0;
-        }
-
+        .badge-id { background: var(--gray-100); color: var(--gray-500); padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+        .status-box { background: white; padding: 24px; border-radius: 20px; border: 1px solid var(--gray-200); text-align: center; box-shadow: var(--shadow); }
+        #contagem { display: inline-block; background: var(--gray-100); color: var(--blue-dark); padding: 10px 20px; border-radius: 12px; font-weight: 800; font-size: 22px; margin: 10px 0; }
         #feedback { margin: 10px 0; font-size: 14px; font-weight: 600; color: var(--orange); }
-
-        .lista-chromes {
-            margin-top: 20px;
-            text-align: left;
-            max-height: 200px;
-            overflow-y: auto;
-            border-top: 1px solid var(--gray-100);
-            padding-top: 15px;
-        }
-
-        .item {
-            padding: 8px 12px;
-            background: var(--gray-100);
-            border-radius: 8px;
-            margin-bottom: 6px;
-            font-size: 13px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        #reader { 
-            width: 100%; 
-            border-radius: 16px; 
-            overflow: hidden; 
-            margin-top: 20px;
-            border: 2px solid var(--gray-200);
-        }
-
-        .btn-action {
-            width: 100%;
-            padding: 14px;
-            border-radius: 12px;
-            border: none;
-            font-weight: 700;
-            cursor: pointer;
-            transition: 0.2s;
-            margin-top: 10px;
-            font-family: 'Inter', sans-serif;
-        }
-
+        .lista-chromes { margin-top: 20px; text-align: left; max-height: 200px; overflow-y: auto; border-top: 1px solid var(--gray-100); padding-top: 15px; }
+        .item { padding: 8px 12px; background: var(--gray-100); border-radius: 8px; margin-bottom: 6px; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+        #reader { width: 100%; border-radius: 16px; overflow: hidden; margin-top: 20px; border: 2px solid var(--gray-200); }
+        .btn-action { width: 100%; padding: 14px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; transition: 0.2s; margin-top: 10px; }
         .btn-finalizar { background: var(--orange); color: white; }
-        .btn-finalizar:hover { background: var(--blue-dark); }
-
         .btn-cancelar { background: white; color: var(--gray-500); border: 1px solid var(--gray-200); }
-        .btn-cancelar:hover { background: var(--gray-100); }
-
         .popup { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15, 42, 107, 0.7); display:none; align-items:center; justify-content:center; padding: 20px; z-index: 1000; }
         .popup-box { background:white; padding:30px; border-radius:20px; text-align:center; max-width:400px; }
-        .popup h3 { color: var(--blue-dark); margin-top: 0; }
         .popup-btns { display: flex; gap: 10px; margin-top: 20px; }
         .popup button { flex: 1; padding: 12px; border-radius: 10px; border: none; font-weight: 600; cursor: pointer; }
         .sim { background: var(--orange); color: white; }
         .nao { background: var(--gray-200); color: var(--gray-500); }
-
-        #loading { 
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: var(--gray-500); 
-            padding: 60px 20px;
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        .ph-spin {
-            animation: spin 1s linear infinite; 
-            font-size: 32px; 
-            margin-bottom: 10px; 
-            color: var(--orange);
-        }
+        #loading { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .ph-spin { animation: spin 1s linear infinite; font-size: 32px; color: var(--orange); }
     </style>
 </head>
 
 <body>
-
     <header class="topbar">
         <button class="btn-voltar-top" onclick="window.location.href='index.html'">
             <i class="ph ph-caret-left"></i> Voltar
@@ -235,17 +62,9 @@
     </header>
 
     <main class="container">
-        
         <div id="view-lista">
-            <div id="titulo-secao" class="section-title">
-                <i class="ph ph-clock-afternoon"></i> Aguardando Separação
-            </div>
-            
-            <div id="loading">
-                <i class="ph ph-circle-notch ph-spin"></i>
-                <span>Buscando pedidos...</span>
-            </div>
-            
+            <div id="titulo-secao" class="section-title"><i class="ph ph-clock-afternoon"></i> Aguardando Separação</div>
+            <div id="loading"><i class="ph ph-circle-notch ph-spin"></i><span>Buscando pedidos...</span></div>
             <div id="container-pedidos" class="container-cards"></div>
         </div>
 
@@ -253,23 +72,14 @@
             <div class="status-box">
                 <h2 id="profAtivo"></h2>
                 <p id="pedidoID"></p>
-                
                 <div id="contagem">0 / 0</div>
                 <div id="feedback">Aguardando leitura do QR Code...</div>
-                
                 <div id="reader"></div>
-
                 <div class="lista-chromes" id="listaChromes"></div>
-                
-                <button class="btn-action btn-finalizar" id="btnFinalizar" style="display:none" onclick="finalizar()">
-                    ✅ Finalizar Separação
-                </button>
-                <button class="btn-action btn-cancelar" onclick="fecharScanner()">
-                    Mudar Pedido
-                </button>
+                <button class="btn-action btn-finalizar" id="btnFinalizar" style="display:none" onclick="finalizar()">✅ Finalizar Separação</button>
+                <button class="btn-action btn-cancelar" onclick="fecharScanner()">Mudar Pedido</button>
             </div>
         </div>
-
     </main>
 
     <div class="popup" id="popupLimite">
@@ -298,145 +108,120 @@
     <script src="https://unpkg.com/html5-qrcode"></script>
 
     <script>
-    const BASE_URL="https://script.google.com/macros/s/AKfycbwy2JvVfE1vZ_Tp2LAEfsSoOlgzgCCCKotsVTUOWY6CFPloFrgvt_mpQ8VVQoeqN0QF/exec";
+        const BASE_URL="https://script.google.com/macros/s/AKfycbwy2JvVfE1vZ_Tp2LAEfsSoOlgzgCCCKotsVTUOWY6CFPloFrgvt_mpQ8VVQoeqN0QF/exec";
 
-    let idPedidoAtual="";
-    let qtdSolicitada=0;
-    let itensBipados=[];
-    let ultimoScan="";
-    const scanner=new Html5Qrcode("reader");
+        let idPedidoAtual="";
+        let qtdSolicitada=0;
+        let itensBipados=[];
+        let ultimoScan="";
+        const scanner=new Html5Qrcode("reader");
 
-    window.onload=carregarPedidos;
+        window.onload=carregarPedidos;
 
-    function carregarPedidos(){
-        document.getElementById("titulo-secao").style.display = "none";
-        document.getElementById("loading").style.display = "flex";
-
-        fetch(`${BASE_URL}?acao=listar_pedidos`)
-        .then(res=>res.json())
-        .then(data=>{
-            document.getElementById("loading").style.display="none";
-            const container=document.getElementById("container-pedidos");
-            const titulo = document.getElementById("titulo-secao");
-            container.innerHTML="";
-
-            const pendentes = data.filter(p => p.status !== "Separado");
-
-            if(pendentes.length === 0) {
-                titulo.style.display = "none";
-                container.innerHTML = "<div style='text-align:center; padding:40px; color:#999;'><i class='ph ph-check-circle' style='font-size:48px; opacity:0.3;'></i><p>Tudo pronto!<br>Nenhum pedido pendente.</p></div>";
-                return;
-            }
-
-            titulo.style.display = "flex";
-
-            pendentes.forEach(p=>{
-                const card=document.createElement("div");
-                card.className="card-pedido";
-                card.innerHTML=`
-                    <div class="info-prof">
-                        <h3>${p.professor}</h3>
-                        <p><i class="ph ph-hash"></i> Qtd: <strong>${p.quantidade}</strong> • ${p.horarioPedido}</p>
-                    </div>
-                    <span class="badge-id">#${p.id}</span>
-                `;
-                card.onclick=()=>iniciarScan(p.id,p.professor,p.quantidade);
-                container.appendChild(card);
+        function carregarPedidos(){
+            document.getElementById("loading").style.display = "flex";
+            fetch(`${BASE_URL}?acao=listar_pedidos`)
+            .then(res=>res.json())
+            .then(data=>{
+                document.getElementById("loading").style.display="none";
+                const container=document.getElementById("container-pedidos");
+                container.innerHTML="";
+                const pendentes = data.filter(p => p.status !== "Separado");
+                if(pendentes.length === 0) {
+                    container.innerHTML = "<p style='text-align:center;'>Nenhum pedido pendente.</p>";
+                    return;
+                }
+                document.getElementById("titulo-secao").style.display = "flex";
+                pendentes.forEach(p=>{
+                    const card=document.createElement("div");
+                    card.className="card-pedido";
+                    card.innerHTML=`<div class="info-prof"><h3>${p.professor}</h3><p>Qtd: ${p.quantidade}</p></div><span class="badge-id">#${p.id}</span>`;
+                    card.onclick=()=>iniciarScan(p.id,p.professor,p.quantidade);
+                    container.appendChild(card);
+                });
             });
-        })
-        .catch(err => {
-            document.getElementById("loading").innerHTML = "Erro ao carregar dados.";
-        });
-    }
-
-    function iniciarScan(id,professor,qtd){
-        idPedidoAtual=id;
-        qtdSolicitada=parseInt(qtd);
-        itensBipados=[];
-        document.getElementById("view-lista").style.display="none";
-        document.getElementById("view-scanner").style.display="block";
-        document.getElementById("profAtivo").innerText="Prof. "+professor;
-        document.getElementById("pedidoID").innerText="ID do Pedido: "+id;
-        document.getElementById("listaChromes").innerHTML="";
-        atualizarContador();
-
-        scanner.start(
-            {facingMode:"environment"},
-            {fps:10,qrbox:250},
-            qrCodeMessage=>processarScan(qrCodeMessage.trim())
-        );
-    }
-
-    function processarScan(idLido){
-        if(itensBipados.includes(idLido)) return;
-        ultimoScan=idLido;
-        
-        // CORREÇÃO: Primeiro verifica o limite, DEPOIS registra no banco
-        if(itensBipados.length >= qtdSolicitada){
-            scanner.pause(); // Pausa para não bipar mil vezes enquanto o popup está aberto
-            document.getElementById("popupLimite").style.display="flex";
-            return;
         }
-        registrarItem(idLido);
-    }
 
-    function confirmarExtra(){
-        fecharPopup();
-        registrarItem(ultimoScan);
-    }
+        function iniciarScan(id,professor,qtd){
+            idPedidoAtual=id;
+            qtdSolicitada=parseInt(qtd);
+            itensBipados=[];
+            document.getElementById("view-lista").style.display="none";
+            document.getElementById("view-scanner").style.display="block";
+            document.getElementById("profAtivo").innerText="Prof. "+professor;
+            document.getElementById("pedidoID").innerText="ID: "+id;
+            atualizarContador();
+            scanner.start({facingMode:"environment"}, {fps:10,qrbox:250}, qrCodeMessage=>processarScan(qrCodeMessage.trim()));
+        }
 
-    function fecharPopup(){
-        document.getElementById("popupLimite").style.display="none";
-        scanner.resume();
-    }
+        function processarScan(idLido){
+            if(itensBipados.includes(idLido)) return;
+            ultimoScan=idLido;
+            scanner.pause(); // Pausa para validar
 
-    function registrarItem(idLido){
-        // Adicionamos idPedido na URL para o back-end saber quem está reservando
-        fetch(`${BASE_URL}?id=${idLido}&idPedido=${idPedidoAtual}&acao=verificar_item`)
-        .then(res=>res.json())
-        .then(res=>{
-            if(res.autorizado){
-                itensBipados.push(idLido);
-                document.getElementById("feedback").innerText="✅ "+res.nome+" bipado";
-                const el=document.createElement("div");
-                el.className="item";
-                el.innerHTML=`<i class="ph ph-check-square"></i> ${res.nome}`;
-                document.getElementById("listaChromes").appendChild(el);
-                atualizarContador();
-                document.getElementById("btnFinalizar").style.display="block";
-            }else{
-                alert(res.msg);
+            // 1. Verifica se já atingiu o limite solicitado
+            if(itensBipados.length >= qtdSolicitada){
+                document.getElementById("popupLimite").style.display="flex";
+            } else {
+                validarEReservar(idLido);
             }
-        });
-    }
-
-    function atualizarContador(){
-        document.getElementById("contagem").innerText=itensBipados.length+" / "+qtdSolicitada;
-    }
-
-    function fecharScanner(){
-        if(idPedidoAtual) {
-            // CORREÇÃO: Enviamos o ID do pedido para o back-end saber o que liberar
-            navigator.sendBeacon(`${BASE_URL}?acao=cancelar_reservas&idPedido=${idPedidoAtual}`);
         }
-        location.reload();
-    }
 
-    function finalizar(){
-        if(!confirm("Concluir separação? O pedido irá para a lista de entrega.")) return;
-        fetch(`${BASE_URL}?idPedido=${idPedidoAtual}&acao=vincular_em_massa`)
-        .then(res=>res.text())
-        .then(msg=>{
-            alert(msg);
+        function validarEReservar(idLido){
+            document.getElementById("feedback").innerText="🔍 Validando...";
+            // 2. Só reserva no banco se passar no teste do limite ou se for confirmado o extra
+            fetch(`${BASE_URL}?id=${idLido}&idPedido=${idPedidoAtual}&acao=verificar_item`)
+            .then(res=>res.json())
+            .then(res=>{
+                if(res.autorizado){
+                    registrarItemNaLista(idLido, res.nome);
+                } else {
+                    mostrarErroItem(res.msg);
+                }
+            })
+            .catch(()=> { alert("Erro de conexão"); scanner.resume(); });
+        }
+
+        function registrarItemNaLista(idLido, nome){
+            itensBipados.push(idLido);
+            document.getElementById("feedback").innerText="✅ Adicionado";
+            const el=document.createElement("div");
+            el.className="item";
+            el.innerHTML=`<i class="ph ph-check-square"></i> ${nome}`;
+            document.getElementById("listaChromes").appendChild(el);
+            atualizarContador();
+            document.getElementById("btnFinalizar").style.display="block";
+            setTimeout(()=>scanner.resume(), 800);
+        }
+
+        function confirmarExtra(){
+            fecharPopup();
+            validarEReservar(ultimoScan);
+        }
+
+        function fecharPopup(){ document.getElementById("popupLimite").style.display="none"; scanner.resume(); }
+        function mostrarErroItem(msg){ document.getElementById("erroMsg").innerText=msg; document.getElementById("popupErroItem").style.display="flex"; }
+        function fecharPopupErro(){ document.getElementById("popupErroItem").style.display="none"; scanner.resume(); }
+        function atualizarContador(){ document.getElementById("contagem").innerText=itensBipados.length+" / "+qtdSolicitada; }
+
+        function fecharScanner(){
+            // CORREÇÃO: Envia o idPedido para o GAS saber o que liberar
+            if(idPedidoAtual) navigator.sendBeacon(`${BASE_URL}?acao=cancelar_reservas&idPedido=${idPedidoAtual}`);
             location.reload();
-        });
-    }
-
-    window.addEventListener("beforeunload",()=>{
-        if(idPedidoAtual) {
-            navigator.sendBeacon(`${BASE_URL}?acao=cancelar_reservas&idPedido=${idPedidoAtual}`);
         }
-    });
-</script>
+
+        function finalizar(){
+            if(!confirm("Concluir separação?")) return;
+            const btn = document.getElementById("btnFinalizar");
+            btn.disabled = true; btn.innerText = "⏳ Gravando...";
+            fetch(`${BASE_URL}?idPedido=${idPedidoAtual}&acao=vincular_em_massa`)
+            .then(res=>res.text())
+            .then(msg=>{ alert(msg); location.reload(); });
+        }
+
+        window.addEventListener("beforeunload",()=>{
+            if(idPedidoAtual) navigator.sendBeacon(`${BASE_URL}?acao=cancelar_reservas&idPedido=${idPedidoAtual}`);
+        });
+    </script>
 </body>
 </html>
