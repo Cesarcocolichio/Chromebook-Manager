@@ -12,6 +12,7 @@
         :root {
             --blue-dark: #0f2a6b;
             --orange: #d97706;
+            --red-alert: #dc2626; /* Cor para erro crítico */
             --blue-hover: #1e3a8a;
             --gray-100: #f3f4f6;
             --gray-200: #e5e7eb;
@@ -75,7 +76,6 @@
             box-sizing: border-box;
         }
 
-        /* Título da seção */
         .section-title {
             font-size: 14px;
             text-transform: uppercase;
@@ -88,7 +88,6 @@
             gap: 8px;
         }
 
-        /* CARDS DE PEDIDOS */
         .container-cards { display: flex; flex-direction: column; gap: 12px; }
 
         .card-pedido {
@@ -122,7 +121,6 @@
             font-weight: 700;
         }
 
-        /* SCANNER VIEW */
         .status-box {
             background: white;
             padding: 24px;
@@ -176,7 +174,6 @@
             border: 2px solid var(--gray-200);
         }
 
-        /* BOTÕES */
         .btn-action {
             width: 100%;
             padding: 14px;
@@ -195,7 +192,6 @@
         .btn-cancelar { background: white; color: var(--gray-500); border: 1px solid var(--gray-200); }
         .btn-cancelar:hover { background: var(--gray-100); }
 
-        /* POPUP */
         .popup { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15, 42, 107, 0.7); display:none; align-items:center; justify-content:center; padding: 20px; z-index: 1000; }
         .popup-box { background:white; padding:30px; border-radius:20px; text-align:center; max-width:400px; }
         .popup h3 { color: var(--blue-dark); margin-top: 0; }
@@ -204,7 +200,6 @@
         .sim { background: var(--orange); color: white; }
         .nao { background: var(--gray-200); color: var(--gray-500); }
 
-        /* LOADING E ANIMAÇÃO DA BOLINHA */
         #loading { 
             display: flex;
             flex-direction: column;
@@ -216,14 +211,13 @@
             box-sizing: border-box;
         }
 
-        /* Criando o giro manual para garantir que funcione */
         @keyframes spin {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
         }
 
         .ph-spin {
-            animation: spin 1s linear infinite; /* Aplica o giro aqui */
+            animation: spin 1s linear infinite; 
             font-size: 32px; 
             margin-bottom: 10px; 
             color: var(--orange);
@@ -290,9 +284,21 @@
         </div>
     </div>
 
+    <div class="popup" id="popupErroItem">
+        <div class="popup-box">
+            <i class="ph ph-x-circle" style="font-size: 40px; color: var(--red-alert)"></i>
+            <h3 id="erroTitulo">Item Indisponível</h3>
+            <p id="erroMsg"></p>
+            <div class="popup-btns">
+                <button class="sim" style="background: var(--blue-dark)" onclick="fecharPopupErro()">Entendido</button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://unpkg.com/html5-qrcode"></script>
 
     <script>
+        // Use o seu BASE_URL configurado no Google Apps Script
         const BASE_URL="https://script.google.com/macros/s/AKfycbwy2JvVfE1vZ_Tp2LAEfsSoOlgzgCCCKotsVTUOWY6CFPloFrgvt_mpQ8VVQoeqN0QF/exec";
 
         let idPedidoAtual="";
@@ -363,44 +369,76 @@
         }
 
         function processarScan(idLido){
+            // Evita processar o mesmo ID duas vezes na mesma sessão
             if(itensBipados.includes(idLido)) return;
             ultimoScan=idLido;
-            if(itensBipados.length>=qtdSolicitada){
-                document.getElementById("popupLimite").style.display="flex";
-                return;
-            }
-            registrarItem(idLido);
+            
+            // Pausa o scanner para validar no servidor
+            scanner.pause();
+            validarEAdicionar(idLido);
+        }
+
+        function validarEAdicionar(idLido) {
+            document.getElementById("feedback").innerText="🔍 Validando no sistema...";
+            
+            // Chamada para a sua função validarBipControle do GAS via rota verificar_item
+            fetch(`${BASE_URL}?id=${idLido}&acao=verificar_item`)
+            .then(res=>res.json())
+            .then(res=>{
+                // Se a função retornar autorizado: true (conforme seu código GAS)
+                if(res.autorizado){
+                    // Verifica se já atingiu o limite solicitado pelo professor
+                    if(itensBipados.length >= qtdSolicitada){
+                        document.getElementById("popupLimite").style.display="flex";
+                    } else {
+                        registrarItemNaLista(idLido, res.nome || idLido);
+                    }
+                } else {
+                    // BLOQUEIO IMEDIATO: Exibe o erro e não adiciona à lista
+                    mostrarErroItem(res.msg);
+                }
+            })
+            .catch(err => {
+                alert("Erro de conexão com o servidor.");
+                scanner.resume();
+            });
+        }
+
+        function mostrarErroItem(msg) {
+            document.getElementById("erroMsg").innerText = msg;
+            document.getElementById("popupErroItem").style.display = "flex";
+            // Toca um feedback visual/auditivo se desejar
+        }
+
+        function fecharPopupErro() {
+            document.getElementById("popupErroItem").style.display = "none";
+            document.getElementById("feedback").innerText = "Aguardando próxima leitura...";
+            setTimeout(() => scanner.resume(), 500);
         }
 
         function confirmarExtra(){
             fecharPopup();
-            registrarItem(ultimoScan);
+            // Para o extra, já sabemos que ele está autorizado pelo servidor (passou pela validarEAdicionar)
+            registrarItemNaLista(ultimoScan, ultimoScan);
         }
 
         function fecharPopup(){
             document.getElementById("popupLimite").style.display="none";
+            scanner.resume();
         }
 
-        function registrarItem(idLido){
-            scanner.pause();
-            fetch(`${BASE_URL}?id=${idLido}&acao=verificar_item`)
-            .then(res=>res.text())
-            .then(msg=>{
-                if(msg.startsWith("OK:")){
-                    const nome=msg.split(":")[1];
-                    itensBipados.push(idLido);
-                    document.getElementById("feedback").innerText="✅ "+nome+" bipado";
-                    const el=document.createElement("div");
-                    el.className="item";
-                    el.innerHTML=`<i class="ph ph-check-square"></i> ${nome}`;
-                    document.getElementById("listaChromes").appendChild(el);
-                    atualizarContador();
-                    document.getElementById("btnFinalizar").style.display="block";
-                }else{
-                    alert(msg);
-                }
-                setTimeout(()=>scanner.resume(),500);
-            });
+        function registrarItemNaLista(idLido, nome){
+            itensBipados.push(idLido);
+            document.getElementById("feedback").innerText="✅ Item adicionado";
+            const el=document.createElement("div");
+            el.className="item";
+            el.innerHTML=`<i class="ph ph-check-square"></i> ${nome}`;
+            document.getElementById("listaChromes").appendChild(el);
+            atualizarContador();
+            document.getElementById("btnFinalizar").style.display="block";
+            
+            // Retoma o scanner após um pequeno delay
+            setTimeout(()=>scanner.resume(), 800);
         }
 
         function atualizarContador(){
@@ -409,23 +447,27 @@
 
         function fecharScanner(){
             try{ scanner.stop(); }catch(e){}
-            navigator.sendBeacon(BASE_URL + "?acao=cancelar_reservas");
             location.reload();
         }
 
         function finalizar(){
-            if(!confirm("Concluir separação? O pedido irá para a lista de entrega.")) return;
+            if(!confirm("Concluir separação? Os Chromebooks serão marcados como 'Separados'.")) return;
+            
+            document.getElementById("btnFinalizar").disabled = true;
+            document.getElementById("btnFinalizar").innerText = "⏳ Gravando...";
+
             fetch(`${BASE_URL}?idPedido=${idPedidoAtual}&listaIds=${itensBipados.join(",")}&acao=vincular_em_massa`)
             .then(res=>res.text())
             .then(msg=>{
                 alert(msg);
                 location.reload();
+            })
+            .catch(err => {
+                alert("Erro ao finalizar. Tente novamente.");
+                document.getElementById("btnFinalizar").disabled = false;
+                document.getElementById("btnFinalizar").innerText = "✅ Finalizar Separação";
             });
         }
-
-        window.addEventListener("beforeunload",()=>{
-            navigator.sendBeacon(`${BASE_URL}?acao=cancelar_reservas`);
-        });
     </script>
 </body>
 </html>
