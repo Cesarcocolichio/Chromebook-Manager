@@ -298,176 +298,145 @@
     <script src="https://unpkg.com/html5-qrcode"></script>
 
     <script>
-        // Use o seu BASE_URL configurado no Google Apps Script
-        const BASE_URL="https://script.google.com/macros/s/AKfycbwy2JvVfE1vZ_Tp2LAEfsSoOlgzgCCCKotsVTUOWY6CFPloFrgvt_mpQ8VVQoeqN0QF/exec";
+    const BASE_URL="https://script.google.com/macros/s/AKfycbwy2JvVfE1vZ_Tp2LAEfsSoOlgzgCCCKotsVTUOWY6CFPloFrgvt_mpQ8VVQoeqN0QF/exec";
 
-        let idPedidoAtual="";
-        let qtdSolicitada=0;
-        let itensBipados=[];
-        let ultimoScan="";
-        const scanner=new Html5Qrcode("reader");
+    let idPedidoAtual="";
+    let qtdSolicitada=0;
+    let itensBipados=[];
+    let ultimoScan="";
+    const scanner=new Html5Qrcode("reader");
 
-        window.onload=carregarPedidos;
+    window.onload=carregarPedidos;
 
-        function carregarPedidos(){
-            document.getElementById("titulo-secao").style.display = "none";
-            document.getElementById("loading").style.display = "flex";
+    function carregarPedidos(){
+        document.getElementById("titulo-secao").style.display = "none";
+        document.getElementById("loading").style.display = "flex";
 
-            fetch(`${BASE_URL}?acao=listar_pedidos`)
-            .then(res=>res.json())
-            .then(data=>{
-                document.getElementById("loading").style.display="none";
-                const container=document.getElementById("container-pedidos");
-                const titulo = document.getElementById("titulo-secao");
-                container.innerHTML="";
+        fetch(`${BASE_URL}?acao=listar_pedidos`)
+        .then(res=>res.json())
+        .then(data=>{
+            document.getElementById("loading").style.display="none";
+            const container=document.getElementById("container-pedidos");
+            const titulo = document.getElementById("titulo-secao");
+            container.innerHTML="";
 
-                const pendentes = data.filter(p => p.status !== "Separado");
+            const pendentes = data.filter(p => p.status !== "Separado");
 
-                if(pendentes.length === 0) {
-                    titulo.style.display = "none";
-                    container.innerHTML = "<div style='text-align:center; padding:40px; color:#999;'><i class='ph ph-check-circle' style='font-size:48px; opacity:0.3;'></i><p>Tudo pronto!<br>Nenhum pedido pendente.</p></div>";
-                    return;
-                }
+            if(pendentes.length === 0) {
+                titulo.style.display = "none";
+                container.innerHTML = "<div style='text-align:center; padding:40px; color:#999;'><i class='ph ph-check-circle' style='font-size:48px; opacity:0.3;'></i><p>Tudo pronto!<br>Nenhum pedido pendente.</p></div>";
+                return;
+            }
 
-                titulo.style.display = "flex";
+            titulo.style.display = "flex";
 
-                pendentes.forEach(p=>{
-                    const card=document.createElement("div");
-                    card.className="card-pedido";
-                    card.innerHTML=`
-                        <div class="info-prof">
-                            <h3>${p.professor}</h3>
-                            <p><i class="ph ph-hash"></i> Qtd: <strong>${p.quantidade}</strong> • ${p.horarioPedido}</p>
-                        </div>
-                        <span class="badge-id">#${p.id}</span>
-                    `;
-                    card.onclick=()=>iniciarScan(p.id,p.professor,p.quantidade);
-                    container.appendChild(card);
-                });
-            })
-            .catch(err => {
-                document.getElementById("loading").innerHTML = "Erro ao carregar dados.";
+            pendentes.forEach(p=>{
+                const card=document.createElement("div");
+                card.className="card-pedido";
+                card.innerHTML=`
+                    <div class="info-prof">
+                        <h3>${p.professor}</h3>
+                        <p><i class="ph ph-hash"></i> Qtd: <strong>${p.quantidade}</strong> • ${p.horarioPedido}</p>
+                    </div>
+                    <span class="badge-id">#${p.id}</span>
+                `;
+                card.onclick=()=>iniciarScan(p.id,p.professor,p.quantidade);
+                container.appendChild(card);
             });
+        })
+        .catch(err => {
+            document.getElementById("loading").innerHTML = "Erro ao carregar dados.";
+        });
+    }
+
+    function iniciarScan(id,professor,qtd){
+        idPedidoAtual=id;
+        qtdSolicitada=parseInt(qtd);
+        itensBipados=[];
+        document.getElementById("view-lista").style.display="none";
+        document.getElementById("view-scanner").style.display="block";
+        document.getElementById("profAtivo").innerText="Prof. "+professor;
+        document.getElementById("pedidoID").innerText="ID do Pedido: "+id;
+        document.getElementById("listaChromes").innerHTML="";
+        atualizarContador();
+
+        scanner.start(
+            {facingMode:"environment"},
+            {fps:10,qrbox:250},
+            qrCodeMessage=>processarScan(qrCodeMessage.trim())
+        );
+    }
+
+    function processarScan(idLido){
+        if(itensBipados.includes(idLido)) return;
+        ultimoScan=idLido;
+        
+        // CORREÇÃO: Primeiro verifica o limite, DEPOIS registra no banco
+        if(itensBipados.length >= qtdSolicitada){
+            scanner.pause(); // Pausa para não bipar mil vezes enquanto o popup está aberto
+            document.getElementById("popupLimite").style.display="flex";
+            return;
         }
+        registrarItem(idLido);
+    }
 
-        function iniciarScan(id,professor,qtd){
-            idPedidoAtual=id;
-            qtdSolicitada=parseInt(qtd);
-            itensBipados=[];
-            document.getElementById("view-lista").style.display="none";
-            document.getElementById("view-scanner").style.display="block";
-            document.getElementById("profAtivo").innerText="Prof. "+professor;
-            document.getElementById("pedidoID").innerText="ID do Pedido: "+id;
-            document.getElementById("listaChromes").innerHTML="";
-            atualizarContador();
+    function confirmarExtra(){
+        fecharPopup();
+        registrarItem(ultimoScan);
+    }
 
-            scanner.start(
-                {facingMode:"environment"},
-                {fps:10,qrbox:250},
-                qrCodeMessage=>processarScan(qrCodeMessage.trim())
-            );
+    function fecharPopup(){
+        document.getElementById("popupLimite").style.display="none";
+        scanner.resume();
+    }
+
+    function registrarItem(idLido){
+        // Adicionamos idPedido na URL para o back-end saber quem está reservando
+        fetch(`${BASE_URL}?id=${idLido}&idPedido=${idPedidoAtual}&acao=verificar_item`)
+        .then(res=>res.json())
+        .then(res=>{
+            if(res.autorizado){
+                itensBipados.push(idLido);
+                document.getElementById("feedback").innerText="✅ "+res.nome+" bipado";
+                const el=document.createElement("div");
+                el.className="item";
+                el.innerHTML=`<i class="ph ph-check-square"></i> ${res.nome}`;
+                document.getElementById("listaChromes").appendChild(el);
+                atualizarContador();
+                document.getElementById("btnFinalizar").style.display="block";
+            }else{
+                alert(res.msg);
+            }
+        });
+    }
+
+    function atualizarContador(){
+        document.getElementById("contagem").innerText=itensBipados.length+" / "+qtdSolicitada;
+    }
+
+    function fecharScanner(){
+        if(idPedidoAtual) {
+            // CORREÇÃO: Enviamos o ID do pedido para o back-end saber o que liberar
+            navigator.sendBeacon(`${BASE_URL}?acao=cancelar_reservas&idPedido=${idPedidoAtual}`);
         }
+        location.reload();
+    }
 
-        function processarScan(idLido){
-            // Evita processar o mesmo ID duas vezes na mesma sessão
-            if(itensBipados.includes(idLido)) return;
-            ultimoScan=idLido;
-            
-            // Pausa o scanner para validar no servidor
-            scanner.pause();
-            validarEAdicionar(idLido);
-        }
-
-        function validarEAdicionar(idLido) {
-            document.getElementById("feedback").innerText="🔍 Validando no sistema...";
-            
-            // Chamada para a sua função validarBipControle do GAS via rota verificar_item
-            fetch(`${BASE_URL}?id=${idLido}&acao=verificar_item`)
-            .then(res=>res.json())
-            .then(res=>{
-                // Se a função retornar autorizado: true (conforme seu código GAS)
-                if(res.autorizado){
-                    // Verifica se já atingiu o limite solicitado pelo professor
-                    if(itensBipados.length >= qtdSolicitada){
-                        document.getElementById("popupLimite").style.display="flex";
-                    } else {
-                        registrarItemNaLista(idLido, res.nome || idLido);
-                    }
-                } else {
-                    // BLOQUEIO IMEDIATO: Exibe o erro e não adiciona à lista
-                    mostrarErroItem(res.msg);
-                }
-            })
-            .catch(err => {
-                alert("Erro de conexão com o servidor.");
-                scanner.resume();
-            });
-        }
-
-        function mostrarErroItem(msg) {
-            document.getElementById("erroMsg").innerText = msg;
-            document.getElementById("popupErroItem").style.display = "flex";
-            // Toca um feedback visual/auditivo se desejar
-        }
-
-        function fecharPopupErro() {
-            document.getElementById("popupErroItem").style.display = "none";
-            document.getElementById("feedback").innerText = "Aguardando próxima leitura...";
-            setTimeout(() => scanner.resume(), 500);
-        }
-
-        function confirmarExtra(){
-            fecharPopup();
-            // Para o extra, já sabemos que ele está autorizado pelo servidor (passou pela validarEAdicionar)
-            registrarItemNaLista(ultimoScan, ultimoScan);
-        }
-
-        function fecharPopup(){
-            document.getElementById("popupLimite").style.display="none";
-            scanner.resume();
-        }
-
-        function registrarItemNaLista(idLido, nome){
-            itensBipados.push(idLido);
-            document.getElementById("feedback").innerText="✅ Item adicionado";
-            const el=document.createElement("div");
-            el.className="item";
-            el.innerHTML=`<i class="ph ph-check-square"></i> ${nome}`;
-            document.getElementById("listaChromes").appendChild(el);
-            atualizarContador();
-            document.getElementById("btnFinalizar").style.display="block";
-            
-            // Retoma o scanner após um pequeno delay
-            setTimeout(()=>scanner.resume(), 800);
-        }
-
-        function atualizarContador(){
-            document.getElementById("contagem").innerText=itensBipados.length+" / "+qtdSolicitada;
-        }
-
-        function fecharScanner(){
-            try{ scanner.stop(); }catch(e){}
+    function finalizar(){
+        if(!confirm("Concluir separação? O pedido irá para a lista de entrega.")) return;
+        fetch(`${BASE_URL}?idPedido=${idPedidoAtual}&acao=vincular_em_massa`)
+        .then(res=>res.text())
+        .then(msg=>{
+            alert(msg);
             location.reload();
-        }
+        });
+    }
 
-        function finalizar(){
-            if(!confirm("Concluir separação? Os Chromebooks serão marcados como 'Separados'.")) return;
-            
-            document.getElementById("btnFinalizar").disabled = true;
-            document.getElementById("btnFinalizar").innerText = "⏳ Gravando...";
-
-            fetch(`${BASE_URL}?idPedido=${idPedidoAtual}&listaIds=${itensBipados.join(",")}&acao=vincular_em_massa`)
-            .then(res=>res.text())
-            .then(msg=>{
-                alert(msg);
-                location.reload();
-            })
-            .catch(err => {
-                alert("Erro ao finalizar. Tente novamente.");
-                document.getElementById("btnFinalizar").disabled = false;
-                document.getElementById("btnFinalizar").innerText = "✅ Finalizar Separação";
-            });
+    window.addEventListener("beforeunload",()=>{
+        if(idPedidoAtual) {
+            navigator.sendBeacon(`${BASE_URL}?acao=cancelar_reservas&idPedido=${idPedidoAtual}`);
         }
-    </script>
+    });
+</script>
 </body>
 </html>
