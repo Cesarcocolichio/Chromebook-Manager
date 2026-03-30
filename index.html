@@ -191,11 +191,35 @@
     </footer>
 
     <script>
-        // Restaurei a sua função original caso você precise usá-la em algum outro botão futuramente.
-        function ir(pagina) {
-            window.location.href = pagina;
+
+    const API_URL = "https://script.google.com/macros/s/AKfycbwy2JvVfE1vZ_Tp2LAEfsSoOlgzgCCCKotsVTUOWY6CFPloFrgvt_mpQ8VVQoeqN0QF/exec";
+    
+    async function carregarResumo(){
+    
+        try{
+    
+            const resposta = await fetch(API_URL + "?acao=resumo");
+            const dados = await resposta.json();
+    
+            document.getElementById("count-disponiveis").textContent = dados.disponiveis;
+            document.getElementById("count-em-uso").textContent = dados.emprestados;
+    
+        }catch(erro){
+    
+            console.error("Erro ao carregar resumo", erro);
+    
         }
-    </script>
+    
+    }
+    
+    window.addEventListener("load", carregarResumo);
+    
+    // sua função original
+    function ir(pagina) {
+        window.location.href = pagina;
+    }
+
+</script>
 
 </body>
 </html>
